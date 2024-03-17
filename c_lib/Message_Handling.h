@@ -36,6 +36,8 @@
 #define MESAGE_HANDELING_H
 
 // Include realted interfaces
+#include "Battery_Monitor.h"
+#include "Encoder.h"
 #include "SerialIO.h"
 
 // Include Lab Specific Task Definitions

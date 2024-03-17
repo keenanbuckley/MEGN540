@@ -1,12 +1,12 @@
 /*
          MEGN540 Mechatronics Lab
-    Copyright (C) Andrew Petruska, 2021.
+    Copyright (C) Andrew Petruska, 2022.
        apetruska [at] mines [dot] edu
           www.mechanical.mines.edu
 */
 
 /*
-    Copyright (c) 2021 Andrew Petruska at Colorado School of Mines
+    Copyright (c) 2022 Andrew Petruska at Colorado School of Mines
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -28,29 +28,92 @@
 
 */
 
-// put your includes here for all modules you need to use
+#include "Battery_Monitor.h"
+#include "Encoder.h"
+#include "Message_Handling.h"  // for translating USB messages to microcontroller tasks
+#include "SerialIO.h"          // for USB communication
+#include "Task_Management.h"   // for clean task management with functors
+#include "Timing.h"            // for Time understanding
 
-// put your task includes and/or function declarations here for future populaion
+// Include Lab Sepcific Functionality
+#include "Lab1_Tasks.h"
+#include "Lab2_Tasks.h"
+#include "Lab3_Tasks.h"
 
 // put your global variables (only if absolutely required) here.
 // Best to identify them as "static" to make them indentified as internal and start with a "_" to identify as internal.
 // Try to initialize them if possible, so their values are never arbitrary.
 
-// put your initialization function here
+/**
+ * Function Initialize_Modules sets up all hardware and persistant memory necessary
+ * for the main loop to funciton properly. It is the first thing main should call and is
+ * a convenient way or resetting the system if that is requested.
+ *
+ * It takes a float as a parameter that is not used to allow it to integrate nicely with the Task_Management Code (which should pass it the seconds since last
+ * ran)
+ *
+ */
+void Initialize_Modules( float _time_not_used_ )
+{
+    // Initialize (reinitialize) all global variables
+
+    // reset USB input buffers
+    USB_Flush_Input_Buffer();
+
+    // Initialize all modules except USB (it can only be called once without messing things up)
+    Initialize_Timing();
+    Initialize_Encoders();
+    Initialize_Battery_Monitor();
+
+    // Setup task handling
+    Initialize_Task( &task_restart, Initialize_Modules /*function pointer to call*/ );
+
+    // Setup message handling to get processed at some desired rate.
+    Initialize_Task( &task_message_handling, Task_Message_Handling );
+    Task_Activate( &task_message_handling, 0 );
+
+    Initialize_Task( &task_message_handling_watchdog, Task_Message_Handling_Watchdog );
+    Task_Activate( &task_message_handling_watchdog, watchdog_timer );
+
+    // Initialize timing tasks
+    Initialize_Task( &task_time_loop, Task_Send_Loop_Time );
+    Initialize_Task( &task_send_time, Task_Send_Time_Now );
+
+    // Initialize encoder task
+    Initialize_Task( &task_encoder_counts, Send_Encoder_Counts );
+
+    // Initialize battery voltage filter
+    Init_Battery_Voltage_Filter();
+    Initialize_Task( &task_battery_filter, Update_Battery_Voltage_Filter );
+    Task_Activate( &task_battery_filter, 2e-3 );
+    Initialize_Task( &task_battery_low, Send_Battery_Low );
+
+    // Initialize battery task
+    Initialize_Task( &task_battery_voltage, Send_Battery_Voltage );
+}
 
 /** Main program entry point. This routine configures the hardware required by the application, then
  *  enters a loop to run the application tasks in sequence.
  */
 int main( void )
 {
+    Initialize_USB();
+    Initialize_Modules( 0.0 );
 
-    // call initialization stuff
+    for( ;; ) {  // yet another way to do while (true)
+        Task_USB_Upkeep();
 
-    for( ;; ) {
-        // main loop logic
+        if( !battery_is_low ) {
+            Task_Run_If_Ready( &task_time_loop );
+            Task_Run_If_Ready( &task_send_time );
+            Task_Run_If_Ready( &task_encoder_counts );
+        }
+
+        Task_Run_If_Ready( &task_battery_filter );
+        Task_Run_If_Ready( &task_battery_voltage );
+        Task_Run_If_Ready( &task_battery_low );
+        Task_Run_If_Ready( &task_message_handling );
+        Task_Run_If_Ready( &task_restart );
+        Task_Run_If_Ready( &task_message_handling_watchdog );
     }
-
-    return 0;
 }
-
-// put your task function definitions here

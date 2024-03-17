@@ -75,6 +75,11 @@ void Task_ReActivate( Task_t* task );
  */
 void Task_Cancel( Task_t* task );
 
+/** Function Task_Activate_Periodic changes the internal state to enable the task.
+ *  Cancel the task instead of running once if run_period is negative.
+ */
+void Task_Activate_Periodic( Task_t* task, float run_period );
+
 /**
  * @brief Function Task_Is_Ready checks to see if the given task is ready for execution.
  *

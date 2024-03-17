@@ -55,12 +55,10 @@ void Initialize_Timing()
     // Enable timing, setup prescalers, etc.
 
     // Set timer 0 to normal operating mode
-    TCCR0A |= ( 0 << COM0A0 );
-    TCCR0A |= ( 0 << COM0A1 );
+    TCCR0A |= ( 0 << COM0A0 ) | ( 0 << COM0A1 );
 
-    // Set prescaler
-    TCCR0B |= ( 1 << CS00 );
-    TCCR0B |= ( 1 << CS01 );
+    // Set prescaler to 64
+    TCCR0B |= ( 1 << CS00 ) | ( 1 << CS01 );
 
     // sets counter
     TCNT0 = 0;
@@ -69,12 +67,9 @@ void Initialize_Timing()
     OCR0A = 249;
 
     // Comparer
-    TIMSK0 |= ( 1 << OCIE0A );
+    TIMSK0 |= ( 1 << OCIE0B );
     sei();  // enables interupts
     _count_ms = 0;
-
-    // Clears on a correct compare
-    TCCR0A |= ( 1 << WGM01 );
 }
 
 float Time_t_to_Seconds( const Time_t* time )
@@ -136,11 +131,12 @@ float Timing_Seconds_Since( const Time_t* time_start_p )
 /** This is the Interrupt Service Routine for the Timer0 Compare A feature.
  * You'll need to set the compare flags properly for it to work.
  */
-ISR( TIMER0_COMPA_vect )
+ISR( TIMER0_COMPB_vect )
 {
     // *** MEGN540 Lab 2 ***
     // YOUR CODE HERE
     // YOU NEED TO RESET THE Timer0 Value to 0 again!
+    TCNT0 = 0;
 
     // take care of upticks of both our internal and external variables.
     _count_ms++;

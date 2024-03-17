@@ -50,6 +50,18 @@ void Task_Cancel( Task_t* task )
     task->is_active = false;
 }
 
+/** Function Task_Activate_Periodic changes the internal state to enable the task.
+ *  Cancel the task instead of running once if run_period is negative.
+ */
+void Task_Activate_Periodic( Task_t* task, float run_period )
+{
+    if( run_period > 0 ) {
+        Task_Activate( task, run_period );
+    } else {
+        Task_Cancel( task );
+    }
+}
+
 float Task_Sec_Since( Task_t* task )
 {
     return Timing_Seconds_Since( &( task->time_last_ran ) );

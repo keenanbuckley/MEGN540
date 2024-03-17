@@ -39,8 +39,9 @@
 #ifndef _LAB3_BATTERY_MONITOR_H
 #define _LAB3_BATTERY_MONITOR_H
 
-#include <avr/io.h>        // For pin input/output access
-#include <ctype.h>         // For int32_t type
+#include <avr/io.h>  // For pin input/output access
+
+#include <ctype.h>  // For int32_t type
 
 /**
  * Function Initialize_Battery_Monitor initializes the Battery Monitor to record the current battery voltages.
@@ -51,9 +52,5 @@ void Initialize_Battery_Monitor();
  * Function Battery_Voltage initiates the A/D measurement and returns the result for the battery voltage.
  */
 float Battery_Voltage();
-
-
-
-
 
 #endif

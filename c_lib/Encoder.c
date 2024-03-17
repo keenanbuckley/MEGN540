@@ -1,5 +1,7 @@
 #include "Encoder.h"
 
+static const float COUNTS_TO_RADIANS = 2 * M_PI / 909.7;
+
 /**
  * Internal counters for the Interrupts to increment or decrement as necessary.
  */
@@ -18,28 +20,28 @@ static volatile int32_t _right_counts = 0;  // Static limits it's use to this fi
 // Hint, use avr's bit_is_set function to help
 static inline bool Right_XOR()
 {
-    return 0;
+    return bit_is_set( PINE, PINE6 );
 }  // MEGN540 Lab 3 TODO
 static inline bool Right_B()
 {
-    return 0;
+    return bit_is_set( PINF, PINF0 );
 }  // MEGN540 Lab 3 TODO
 static inline bool Right_A()
 {
-    return 0;
+    return Right_XOR() ^ Right_B();
 }  // MEGN540 Lab 3 TODO
 
 static inline bool Left_XOR()
 {
-    return 0;
+    return bit_is_set( PINB, PINB4 );
 }  // MEGN540 Lab 3 TODO
 static inline bool Left_B()
 {
-    return 0;
+    return bit_is_set( PINE, PINE2 );
 }  // MEGN540 Lab 3 TODO
 static inline bool Left_A()
 {
-    return 0;
+    return Left_XOR() ^ Left_B();
 }  // MEGN540 Lab 3 TODO
 
 /**
@@ -70,6 +72,24 @@ void Initialize_Encoders()
 
     _left_counts  = 0;  // MEGN540 Lab 3 TODO
     _right_counts = 0;  // MEGN540 Lab 3 TODO
+
+    // RIGHT ENCODER
+    // Enable interrupt mask for right encoder
+    EIMSK |= ( 1 << INT6 );
+    // Triggers on any right encoder XOR change
+    EICRB |= ( 1 << ISC60 );
+    // Enable interrupt flag for right encoder
+    EIFR |= ( 1 << INTF6 );
+
+    // LEFT ENCODER
+    // Enable pin change interrupt
+    PCICR |= ( 1 << PCIE0 );
+    // Enable interrupt flag
+    PCIFR |= ( 1 << PCIF0 );
+    // Interrupt mask for pin 4
+    PCMSK0 |= ( 1 << PCINT4 );
+
+    sei();  // enables interrupts
 }
 
 /**
@@ -83,7 +103,14 @@ int32_t Encoder_Counts_Left()
     // Note: Interrupts can trigger during a function call and an int32 requires
     // multiple clock cycles to read/save. You may want to stop interrupts, copy the value,
     // and re-enable interrupts to prevent this from corrupting your read/write.
-    return 0;
+
+    // Disable pin change interrupt
+    cli();  // PCICR &= ~( 1 << PCIE0 );
+    // get encoder counts
+    int32_t left_counts = _left_counts;
+    // Enable pin change interrupt
+    sei();  // PCICR |= ( 1 << PCIE0 );
+    return left_counts;
 }
 
 /**
@@ -97,7 +124,14 @@ int32_t Encoder_Counts_Right()
     // Note: Interrupts can trigger during a function call and an int32 requires
     // multiple clock cycles to read/save. You may want to stop interrupts, copy the value,
     // and re-enable interrupts to prevent this from corrupting your read/write.
-    return 0;
+
+    // Disable pin change interrupt
+    cli();  // EIMSK &= ~( 1 << INT6 );
+    // get encoder counts
+    int32_t right_counts = _right_counts;
+    // Enable pin change interrupt
+    sei();  // EIMSK |= ( 1 << INT6 );
+    return right_counts;
 }
 
 /**
@@ -108,7 +142,7 @@ float Encoder_Rad_Left()
 {
     // *** MEGN540 Lab3 ***
     // YOUR CODE HERE.  How many counts per rotation???
-    return 0;
+    return Encoder_Counts_Left() * COUNTS_TO_RADIANS;
 }
 
 /**
@@ -119,7 +153,55 @@ float Encoder_Rad_Right()
 {
     // *** MEGN540 Lab3 ***
     // YOUR CODE HERE.  How many counts per rotation???
-    return 0;
+    return Encoder_Counts_Right() * COUNTS_TO_RADIANS;
+}
+
+union enc_data {
+    struct {
+        unsigned currB : 1;
+        unsigned currA : 1;
+        unsigned lastB : 1;
+        unsigned lastA : 1;
+    } split;
+    uint8_t value;
+};
+
+/**
+ * Interrupt Service Routine for the right Encoder.
+ * @return
+ */
+ISR( INT6_vect )
+{
+    union enc_data data;
+    data.value       = 0;
+    data.split.lastA = _last_right_A;
+    data.split.lastB = _last_right_B;
+    data.split.currB = Right_B();
+    data.split.currA = Right_XOR() ^ data.split.currB;
+
+    switch( data.value ) {
+        case 0b1011:
+        case 0b1101:
+        case 0b0100:
+        case 0b0010:
+            /* forward case */
+            _right_counts++;
+            break;
+
+        case 0b1110:
+        case 0b0111:
+        case 0b0001:
+        case 0b1000:
+            /* backward case */
+            _right_counts--;
+            break;
+
+        // other cases do not change encoder ticks
+        default: break;
+    }
+
+    _last_right_A = data.split.currA;
+    _last_right_B = data.split.currB;
 }
 
 /**
@@ -127,16 +209,30 @@ float Encoder_Rad_Right()
  * the Pin Change Interrupts can trigger for multiple pins.
  * @return
  */
-// ISR()
-//{
-//
-//}
+ISR( PCINT0_vect )
+{
+    bool left_xor = Left_XOR();
+    if( _last_left_XOR != left_xor ) {
+        union enc_data data;
+        data.value       = 0;
+        data.split.lastA = _last_left_A;
+        data.split.lastB = _last_left_B;
+        data.split.currB = Left_B();
+        data.split.currA = data.split.currB ^ left_xor;
 
-/**
- * Interrupt Service Routine for the right Encoder.
- * @return
- */
-// ISR()
-//{
-//
-//}
+        switch( data.value ) {
+            case 0b1011:
+            case 0b1101:
+            case 0b0100:
+            case 0b0010: _left_counts++; break;
+
+            case 0b1110:
+            case 0b0111:
+            case 0b0001:
+            case 0b1000: _left_counts--; break;
+        }
+        _last_left_A   = data.split.currA;
+        _last_left_B   = data.split.currB;
+        _last_left_XOR = left_xor;
+    }
+}

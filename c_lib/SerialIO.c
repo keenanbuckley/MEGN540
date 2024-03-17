@@ -123,6 +123,10 @@ static void _USB_Write_Data()
         /* Finalize the stream transfer to send the last packet */
         Endpoint_ClearIN();
     }
+
+    if( rb_length_B( &_usb_send_buffer ) == 0 ) {
+        Endpoint_ClearIN();
+    }
 }
 
 void Task_USB_Upkeep()

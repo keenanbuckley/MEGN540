@@ -190,13 +190,7 @@ void Task_Message_Handling( float _time_since_last )
             break;
         case 't':
             if( USB_Msg_Length() >= _Message_Length( 't' ) ) {
-                // then process your plus...
-
-                // remove the command from the usb recieved buffer using the
-                // usb_msg_get() function
-                USB_Msg_Get();  // removes the first character from the received buffer,
-                                // we already know it was a * so no need to save it as a
-                                // variable
+                USB_Msg_Get();  // removes the first character from the received buffer
 
                 // Build a meaningful structure to put your data in. Here we want one char
                 struct __attribute__( ( __packed__ ) ) {
@@ -220,15 +214,9 @@ void Task_Message_Handling( float _time_since_last )
             break;
         case 'T':
             if( USB_Msg_Length() >= _Message_Length( 'T' ) ) {
-                // then process your plus...
+                USB_Msg_Get();  // removes the first character from the received buffer
 
-                // remove the command from the usb recieved buffer using the
-                // usb_msg_get() function
-                USB_Msg_Get();  // removes the first character from the received buffer,
-                                // we already know it was a * so no need to save it as a
-                                // variable
-
-                // Build a meaningful structure to put your data in. Here we want one char
+                // Build a meaningful structure to put your data in. Here we want one char and one float
                 struct __attribute__( ( __packed__ ) ) {
                     char c;
                     float f;
@@ -255,6 +243,56 @@ void Task_Message_Handling( float _time_since_last )
                         break;
                     default: break;
                 }
+
+                // /* MEGN540 -- LAB 2 */
+                command_processed = true;
+            }
+            break;
+        case 'e':
+            if( USB_Msg_Length() >= _Message_Length( 'e' ) ) {
+                USB_Msg_Get();  // removes the first character from the received buffer
+
+                // Call MEGN540_Lab_Task Function
+                Task_Activate( &task_encoder_counts, -1 );
+
+                // /* MEGN540 -- LAB 2 */
+                command_processed = true;
+            }
+            break;
+        case 'E':
+            if( USB_Msg_Length() >= _Message_Length( 'E' ) ) {
+                USB_Msg_Get();  // removes the first character from the received buffer
+
+                float run_period;
+                USB_Msg_Read_Into( &run_period, sizeof( run_period ) );
+
+                // Call MEGN540_Lab_Task Function
+                Task_Activate_Periodic( &task_encoder_counts, run_period * 1e-3 );
+
+                // /* MEGN540 -- LAB 2 */
+                command_processed = true;
+            }
+            break;
+        case 'b':
+            if( USB_Msg_Length() >= _Message_Length( 'b' ) ) {
+                USB_Msg_Get();  // removes the first character from the received buffer
+
+                // Call MEGN540_Lab_Task Function
+                Task_Activate( &task_battery_voltage, -1 );
+
+                // /* MEGN540 -- LAB 2 */
+                command_processed = true;
+            }
+            break;
+        case 'B':
+            if( USB_Msg_Length() >= _Message_Length( 'B' ) ) {
+                USB_Msg_Get();  // removes the first character from the received buffer
+
+                float run_period;
+                USB_Msg_Read_Into( &run_period, sizeof( run_period ) );
+
+                // Call MEGN540_Lab_Task Function
+                Task_Activate_Periodic( &task_battery_voltage, run_period * 1e-3 );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;
