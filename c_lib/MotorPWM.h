@@ -52,11 +52,11 @@
 #ifndef _LAB4_MOTOR_PWM_H
 #define _LAB4_MOTOR_PWM_H
 
-#include <avr/interrupt.h> // for interrupt enable/disable
-#include <avr/io.h>        // For pin input/output access
-#include <ctype.h>         // For int32_t type
-#include <stdbool.h>       // For bool
+#include <avr/interrupt.h>  // for interrupt enable/disable
+#include <avr/io.h>         // For pin input/output access
 
+#include <ctype.h>    // For int32_t type
+#include <stdbool.h>  // For bool
 
 /**
  * Function Initialize_Motor_PWM initializes the motor PWM on Timer 1 for PWM based voltage control of the motors.
@@ -88,7 +88,7 @@ void MotorPWM_Set_Left( int16_t pwm );
  * Function MototPWM_Set_Right sets the PWM duty cycle for the right motor.
  * @return [int32_t] The count number.
  */
-void MototPWM_Set_Right( int16_t pwm );
+void MotorPWM_Set_Right( int16_t pwm );
 
 /**
  * Function MotorPWM_Get_Left returns the current PWM duty cycle for the left motor. If disabled it returns what the
