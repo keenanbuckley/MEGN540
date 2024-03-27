@@ -57,6 +57,9 @@
 
 #include <ctype.h>    // For int32_t type
 #include <stdbool.h>  // For bool
+#include <stdlib.h>
+
+#define MOTOR_DEADBAND 9
 
 /**
  * Function Initialize_Motor_PWM initializes the motor PWM on Timer 1 for PWM based voltage control of the motors.

@@ -83,15 +83,14 @@ static void _USB_Read_Data()
 
     if( Endpoint_IsOUTReceived() ) {
         /* Read in the incoming packet into the buffer */
-        uint8_t nextByte = Endpoint_Read_8();
-
-        /* Finalize the stream transfer to send the last packet */
-        if( Endpoint_BytesInEndpoint() == 0 ) {
-            Endpoint_ClearOUT();
+        while( Endpoint_BytesInEndpoint() > 0 ) {
+            uint8_t nextByte = Endpoint_Read_8();
+            /* Write from temp buffer into the ring buffer */
+            rb_push_back_B( &_usb_receive_buffer, nextByte );
         }
 
-        /* Write from temp buffer into the ring buffer */
-        rb_push_back_B( &_usb_receive_buffer, nextByte );
+        /* Finalize the stream transfer to send the last packet */
+        Endpoint_ClearOUT();
     }
 }
 
@@ -114,11 +113,15 @@ static void _USB_Write_Data()
     /* Select the Serial Tx Endpoint */
     Endpoint_SelectEndpoint( CDC_TX_EPADDR );
 
-    if( Endpoint_IsINReady() && rb_length_B( &_usb_send_buffer ) > 0 ) {
-        uint8_t nextByte = rb_pop_front_B( &_usb_send_buffer );
+    if( Endpoint_IsINReady() ) {
+        uint8_t max_tx_length = CDC_TXRX_EPSIZE;
 
         /* Write the received data to the endpoint */
-        Endpoint_Write_8( nextByte );
+        while( rb_length_B( &_usb_send_buffer ) > 0 && max_tx_length > 0 ) {
+            uint8_t nextByte = rb_pop_front_B( &_usb_send_buffer );
+            Endpoint_Write_8( nextByte );
+            max_tx_length--;
+        }
 
         /* Finalize the stream transfer to send the last packet */
         Endpoint_ClearIN();

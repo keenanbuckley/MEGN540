@@ -327,7 +327,7 @@ void Task_Message_Handling( float _time_since_last )
                 struct __attribute__( ( __packed__ ) ) {
                     int16_t left;
                     int16_t right;
-                    int8_t duration;
+                    float duration;
                 } data;
 
                 USB_Msg_Read_Into( &data, sizeof( data ) );
@@ -336,25 +336,15 @@ void Task_Message_Handling( float _time_since_last )
                 MotorPWM_Set_Left( data.left );
                 MotorPWM_Set_Right( data.right );
                 Task_Activate( &task_enable_PWM, -1 );
-                Task_Activate( &task_disable_PWM, ( (float)data.duration ) * 1e-3 );
+                Task_Activate( &task_disable_PWM, data.duration * 1e-3 );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;
             }
             break;
         case 's':
-            if( USB_Msg_Length() >= _Message_Length( 's' ) ) {
-                USB_Msg_Get();  // removes the first character from the received buffer
-
-                // Call MEGN540_Lab_Task Function
-                Task_Activate( &task_disable_PWM, -1 );
-
-                // /* MEGN540 -- LAB 2 */
-                command_processed = true;
-            }
-            break;
         case 'S':
-            if( USB_Msg_Length() >= _Message_Length( 's' ) ) {
+            if( USB_Msg_Length() >= _Message_Length( 'S' ) ) {
                 USB_Msg_Get();  // removes the first character from the received buffer
 
                 // Call MEGN540_Lab_Task Function
@@ -365,7 +355,7 @@ void Task_Message_Handling( float _time_since_last )
             }
             break;
         case 'q':
-            if( USB_Msg_Length() >= _Message_Length( 's' ) ) {
+            if( USB_Msg_Length() >= _Message_Length( 'q' ) ) {
                 USB_Msg_Get();  // removes the first character from the received buffer
 
                 // Call MEGN540_Lab_Task Function
@@ -376,7 +366,7 @@ void Task_Message_Handling( float _time_since_last )
             }
             break;
         case 'Q':
-            if( USB_Msg_Length() >= _Message_Length( 's' ) ) {
+            if( USB_Msg_Length() >= _Message_Length( 'Q' ) ) {
                 USB_Msg_Get();  // removes the first character from the received buffer
 
                 float run_period;

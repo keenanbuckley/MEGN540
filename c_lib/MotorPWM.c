@@ -22,6 +22,7 @@ void Initialize_MotorPWM( uint16_t MAX_PWM )
     DDRB |= ( 1 << DDB5 ) | ( 1 << DDB6 );
 
     MotorPWM_Set_Max( MAX_PWM );
+    MotorPWM_Enable( false );
 }
 
 /**
@@ -34,6 +35,8 @@ void MotorPWM_Enable( bool enable )
         TCCR1A |= ( ( 1 << COM1A1 ) | ( 1 << COM1B1 ) );
     } else {
         TCCR1A &= ~( ( 1 << COM1A1 ) | ( 1 << COM1B1 ) );
+        MotorPWM_Set_Left( 0 );
+        MotorPWM_Set_Right( 0 );
     }
 }
 
@@ -56,14 +59,16 @@ bool MotorPWM_Is_Enabled()
  */
 void MotorPWM_Set_Left( int16_t pwm )
 {
-    _left_pwm = ( ( pwm * _TOP ) / 100 );
+    if( abs( pwm ) < MOTOR_DEADBAND )
+        pwm = 0;
     if( pwm >= 0 ) {
         PORTB &= ~( 1 << PB2 );
-        OCR1B = _left_pwm;
     } else {
         PORTB |= ( 1 << PB2 );
-        OCR1B = -1 * _left_pwm;
     }
+
+    _left_pwm = ( ( abs( pwm ) * _TOP ) / 100 );
+    OCR1B     = _left_pwm;
 }
 
 /**
@@ -72,14 +77,16 @@ void MotorPWM_Set_Left( int16_t pwm )
  */
 void MotorPWM_Set_Right( int16_t pwm )
 {
-    _right_pwm = ( ( pwm * _TOP ) / 100 );
+    if( abs( pwm ) < abs( MOTOR_DEADBAND ) )
+        pwm = 0;
     if( pwm >= 0 ) {
         PORTB &= ~( 1 << PB1 );
-        OCR1A = _right_pwm;
     } else {
         PORTB |= ( 1 << PB1 );
-        OCR1A = -1 * _right_pwm;
     }
+
+    _right_pwm = ( ( abs( pwm ) * _TOP ) / 100 );
+    OCR1A      = _right_pwm;
 }
 
 /**

@@ -52,10 +52,10 @@ Task_t task_sys_id;
 // Put your lab-specific task functionality and data_structures (if necessary) here so it is accessable to both
 // message handeling and the Lab main loops.
 // e.g. void Send_Time_Now( float _time_since_last );
-void Enable_PWM( uint32_t _time_since_last );
+void Enable_PWM( float _time_since_last );
 
-void Stop_PWM( uint32_t _time_since_last );
+void Stop_PWM( float _time_since_last );
 
-void Send_Sys_ID( uint32_t _time_since_last );
+void Send_Sys_ID( float _time_since_last );
 
 #endif  // ifndef LAB4_TASKS_H

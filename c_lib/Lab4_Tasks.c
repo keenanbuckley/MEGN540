@@ -1,22 +1,23 @@
 #include "Lab4_Tasks.h"
 
-void Enable_PWM( uint32_t _time_since_last )
+void Enable_PWM( float _time_since_last )
 {
-    if( MotorPWM_Get_Left() != 0 && MotorPWM_Get_Right() != 0 ) {
-        MotorPWM_Enable( true );
-    } else {
-        MotorPWM_Enable( false );
-    }
+    MotorPWM_Enable( true );
+    // if( MotorPWM_Get_Left() != 0 && MotorPWM_Get_Right() != 0 ) {
+
+    // } else {
+    //     MotorPWM_Enable( false );
+    // }
 };
 
-void Stop_PWM( uint32_t _time_since_last )
+void Stop_PWM( float _time_since_last )
 {
     // disable PWM
     MotorPWM_Enable( false );
     Task_Cancel( &task_disable_PWM );
 }
 
-void Send_Sys_ID( uint32_t _time_since_last )
+void Send_Sys_ID( float _time_since_last )
 {
     struct __attribute__( ( __packed__ ) ) {
         float time;
@@ -31,6 +32,6 @@ void Send_Sys_ID( uint32_t _time_since_last )
     data.Encoder_L = (int16_t)Encoder_Counts_Left();
     data.Encoder_R = (int16_t)Encoder_Counts_Right();
 
-    char cmd = ( task_sys_id.run_period == -1 ) ? 'b' : 'B';
+    char cmd = ( task_sys_id.run_period == -1 ) ? 'q' : 'Q';
     USB_Send_Msg( "cfhhhh", cmd, &data, sizeof( data ) );
 }
