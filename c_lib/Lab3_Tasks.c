@@ -4,6 +4,8 @@ static float numerator_coeffs[]   = { 0.0002f, 0.0007f, 0.0011f, 0.0007f, 0.0002
 static float denominator_coeffs[] = { 1.0000f, -3.3441f, 4.2389f, -2.4093f, 0.5175f };
 static const uint8_t order        = 4;
 
+float check_voltage_last = 5.0f;
+
 void Init_Battery_Voltage_Filter()
 {
     Filter_Init( &battery_filter, numerator_coeffs, denominator_coeffs, order );
@@ -11,9 +13,10 @@ void Init_Battery_Voltage_Filter()
     battery_is_low = false;
 }
 
-static void Check_Battery_Voltage( float voltage )
+void Check_Battery_Voltage( float _time_since_last )
 {
-    if( voltage < 4.8f && voltage > 3.0 ) {
+    float voltage = Filter_Last_Output( &battery_filter );
+    if( check_voltage_last < 4.8f && voltage && voltage > 3.0 ) {
         if( !battery_is_low ) {
             battery_is_low = true;
             Task_Activate( &task_battery_low, 1.0f );
@@ -24,12 +27,12 @@ static void Check_Battery_Voltage( float voltage )
             Task_Cancel( &task_battery_low );
         }
     }
+    check_voltage_last = voltage;
 }
 
 void Update_Battery_Voltage_Filter( float _time_since_last )
 {
-    float voltage = Filter_Value( &battery_filter, Battery_Voltage() );
-    Check_Battery_Voltage( voltage );
+    Filter_Value( &battery_filter, Battery_Voltage() );
 }
 
 void Send_Battery_Low( float _time_since_last )

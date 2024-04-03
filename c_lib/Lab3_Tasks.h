@@ -49,6 +49,7 @@
 // e.g. Task_t task_restart;  ///<-- Lab 1: This flag indicates that the device received a restart command from the hoast. Default inactive.
 Task_t task_battery_filter;
 Filter_Data_t battery_filter;
+Task_t task_check_voltage;
 bool battery_is_low;
 Task_t task_battery_low;
 Task_t task_battery_voltage;
@@ -59,6 +60,7 @@ Task_t task_encoder_counts;
 // e.g. void Send_Time_Now( float _time_since_last );
 void Init_Battery_Voltage_Filter();
 void Update_Battery_Voltage_Filter( float _time_since_last );
+void Check_Battery_Voltage( float _time_since_last );
 void Send_Battery_Low( float _time_since_last );
 
 void Send_Battery_Voltage( float _time_since_last );

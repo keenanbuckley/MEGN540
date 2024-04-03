@@ -88,6 +88,8 @@ void Initialize_Modules( float _time_not_used_ )
     Initialize_Task( &task_battery_filter, Update_Battery_Voltage_Filter );
     Task_Activate( &task_battery_filter, 2e-3 );
     Initialize_Task( &task_battery_low, Send_Battery_Low );
+    Initialize_Task( &task_check_voltage, Check_Battery_Voltage );
+    Task_Activate( &task_check_voltage, 1e-1 );
 
     // Initialize battery task
     Initialize_Task( &task_battery_voltage, Send_Battery_Voltage );
@@ -110,15 +112,15 @@ int main( void )
         Task_USB_Upkeep();
 
         if( !battery_is_low ) {
-            Task_Run_If_Ready( &task_time_loop );
-            Task_Run_If_Ready( &task_send_time );
-            Task_Run_If_Ready( &task_encoder_counts );
             Task_Run_If_Ready( &task_enable_PWM );
-            Task_Run_If_Ready( &task_sys_id );
         } else {
             Task_Activate( &task_disable_PWM, -1 );
         }
 
+        Task_Run_If_Ready( &task_encoder_counts );
+        Task_Run_If_Ready( &task_sys_id );
+        Task_Run_If_Ready( &task_time_loop );
+        Task_Run_If_Ready( &task_send_time );
         Task_Run_If_Ready( &task_disable_PWM );
         Task_Run_If_Ready( &task_battery_filter );
         Task_Run_If_Ready( &task_battery_voltage );

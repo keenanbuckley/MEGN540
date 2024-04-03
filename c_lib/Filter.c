@@ -107,15 +107,7 @@ float Filter_Value( Filter_Data_t* p_filt, float value )
     rb_pop_back_F( &p_filt->out_list );
     rb_push_front_F( &p_filt->in_list, value );
     rb_push_front_F( &p_filt->out_list, 0.0 );
-    return Filter_Last_Output( p_filt );
-}
 
-/**
- * Function Filter_Last_Output returns the most up-to-date filtered value without updating the filter.
- * @return The latest filtered value
- */
-float Filter_Last_Output( Filter_Data_t* p_filt )
-{
     float num_sum = 0;
     for( uint8_t i = 0; i < rb_length_F( &p_filt->numerator ); i++ ) {
         num_sum += rb_get_F( &p_filt->numerator, i ) * rb_get_F( &p_filt->in_list, i );
@@ -127,5 +119,14 @@ float Filter_Last_Output( Filter_Data_t* p_filt )
     float den_0   = rb_get_F( &p_filt->denominator, 0 );
     float new_val = ( num_sum - den_sum ) / den_0;
     rb_set_F( &p_filt->out_list, 0, new_val );
+    return Filter_Last_Output( p_filt );
+}
+
+/**
+ * Function Filter_Last_Output returns the most up-to-date filtered value without updating the filter.
+ * @return The latest filtered value
+ */
+float Filter_Last_Output( Filter_Data_t* p_filt )
+{
     return rb_get_F( &p_filt->out_list, 0 );
 }
