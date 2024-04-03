@@ -63,7 +63,7 @@
 #endif
 
 #ifndef RB_LENGTH_B
-#    define RB_LENGTH_B 16  // must be a power of 2 (max of 256). This is an easy place to adjust max expected length
+#    define RB_LENGTH_B 256  // must be a power of 2 (max of 256). This is an easy place to adjust max expected length
 #endif
 
 // data structure for a float ring buffer
