@@ -59,7 +59,7 @@
 #include <stdbool.h>  // For bool
 #include <stdlib.h>
 
-#define MOTOR_DEADBAND 9
+#define MOTOR_DEADBAND 8
 
 /**
  * Function Initialize_Motor_PWM initializes the motor PWM on Timer 1 for PWM based voltage control of the motors.

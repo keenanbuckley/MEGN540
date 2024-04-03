@@ -59,16 +59,18 @@ bool MotorPWM_Is_Enabled()
  */
 void MotorPWM_Set_Left( int16_t pwm )
 {
-    if( abs( pwm ) < MOTOR_DEADBAND )
-        pwm = 0;
-    if( pwm >= 0 ) {
-        PORTB &= ~( 1 << PB2 );
-    } else {
-        PORTB |= ( 1 << PB2 );
-    }
+    if( pwm != 0 ) {
+        if( pwm > 0 ) {
+            PORTB &= ~( 1 << PB2 );
+        } else {
+            PORTB |= ( 1 << PB2 );
+        }
 
-    _left_pwm = ( ( abs( pwm ) * _TOP ) / 100 );
-    OCR1B     = _left_pwm;
+        _left_pwm = ( ( abs( pwm ) * _TOP ) / ( 100 - MOTOR_DEADBAND ) ) + ( ( MOTOR_DEADBAND * _TOP ) / 100 );
+    } else {
+        _left_pwm = 0;
+    }
+    OCR1B = _left_pwm;
 }
 
 /**
@@ -77,16 +79,18 @@ void MotorPWM_Set_Left( int16_t pwm )
  */
 void MotorPWM_Set_Right( int16_t pwm )
 {
-    if( abs( pwm ) < abs( MOTOR_DEADBAND ) )
-        pwm = 0;
-    if( pwm >= 0 ) {
-        PORTB &= ~( 1 << PB1 );
-    } else {
-        PORTB |= ( 1 << PB1 );
-    }
+    if( pwm != 0 ) {
+        if( pwm > 0 ) {
+            PORTB &= ~( 1 << PB1 );
+        } else {
+            PORTB |= ( 1 << PB1 );
+        }
 
-    _right_pwm = ( ( abs( pwm ) * _TOP ) / 100 );
-    OCR1A      = _right_pwm;
+        _right_pwm = ( ( abs( pwm ) * _TOP ) / ( 100 - MOTOR_DEADBAND ) ) + ( ( MOTOR_DEADBAND * _TOP ) / 100 );
+    } else {
+        _right_pwm = 0;
+    }
+    OCR1A = _right_pwm;
 }
 
 /**
