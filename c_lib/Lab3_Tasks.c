@@ -16,10 +16,10 @@ void Init_Battery_Voltage_Filter()
 void Check_Battery_Voltage( float _time_since_last )
 {
     float voltage = Filter_Last_Output( &battery_filter );
-    if( check_voltage_last < 4.8f && voltage && voltage > 3.0 ) {
+    if( check_voltage_last < 4.8f && voltage < 4.8f ) {
         if( !battery_is_low ) {
             battery_is_low = true;
-            Task_Activate( &task_battery_low, 1.0f );
+            Task_Activate( &task_battery_low, 1.0 );
         }
     } else {
         if( battery_is_low ) {
@@ -38,15 +38,17 @@ void Update_Battery_Voltage_Filter( float _time_since_last )
 void Send_Battery_Low( float _time_since_last )
 {
     float voltage = Filter_Last_Output( &battery_filter );
-    struct __attribute__( ( __packed__ ) ) {
-        char let[6];
-        float volt;
-    } msg = { .let = { 'B', 'A', 'T', 'L', 'O', 'W' }, .volt = voltage };
-    // Send Warning to Serial that batteries need to be charged
-    USB_Send_Msg( "c6sf", '!', &msg, sizeof( msg ) );
-    // Task_Activate( &task_battery_voltage, -1 );
-    // USB_Send_Msg( "cf", '!', &msg.volt, sizeof( msg.volt ) );
-    // USB_Send_Msg( "c7sf", '!', &msg, sizeof( msg ) );
+    if( voltage > 3.0f ) {
+        struct __attribute__( ( __packed__ ) ) {
+            char let[6];
+            float volt;
+        } msg = { .let = { 'B', 'A', 'T', 'L', 'O', 'W' }, .volt = voltage };
+        // Send Warning to Serial that batteries need to be charged
+        USB_Send_Msg( "c6sf", '!', &msg, sizeof( msg ) );
+        // Task_Activate( &task_battery_voltage, -1 );
+        // USB_Send_Msg( "cf", '!', &msg.volt, sizeof( msg.volt ) );
+        // USB_Send_Msg( "c7sf", '!', &msg, sizeof( msg ) );
+    }
 }
 
 void Send_Battery_Voltage( float _time_since_last )

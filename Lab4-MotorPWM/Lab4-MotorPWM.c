@@ -89,7 +89,7 @@ void Initialize_Modules( float _time_not_used_ )
     Task_Activate( &task_battery_filter, 2e-3 );
     Initialize_Task( &task_battery_low, Send_Battery_Low );
     Initialize_Task( &task_check_voltage, Check_Battery_Voltage );
-    Task_Activate( &task_check_voltage, 1e-1 );
+    Task_Activate( &task_check_voltage, 1e-2 );
 
     // Initialize battery task
     Initialize_Task( &task_battery_voltage, Send_Battery_Voltage );
@@ -120,10 +120,10 @@ int main( void )
         Task_Run_If_Ready( &task_encoder_counts );
         Task_Run_If_Ready( &task_sys_id );
         Task_Run_If_Ready( &task_time_loop );
-        Task_Run_If_Ready( &task_send_time );
         Task_Run_If_Ready( &task_disable_PWM );
         Task_Run_If_Ready( &task_battery_filter );
         Task_Run_If_Ready( &task_battery_voltage );
+        Task_Run_If_Ready( &task_check_voltage );
         Task_Run_If_Ready( &task_battery_low );
         Task_Run_If_Ready( &task_message_handling );
         Task_Run_If_Ready( &task_restart );
