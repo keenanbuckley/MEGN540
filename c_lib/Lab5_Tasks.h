@@ -38,13 +38,21 @@
 #include "Task_Management.h"
 
 // Include your lab-specific headers here
-// e.g. #include "SerialIO.h"  // necessary for sending arithmatic results back to user
+#include "SerialIO.h"  // necessary for sending arithmatic results back to user
+#include "Skid_Steer_Controller.h"
 
 // Put your lab-specific tasks here
-// e.g. Task_t task_restart;  ///<-- Lab 1: This flag indicates that the device received a restart command from the hoast. Default inactive.
+Skid_Steer_Controller_t controller;
+Task_t task_update_controller;
 
 // Put your lab-specific task functionality and data_structures (if necessary) here so it is accessable to both
 // message handeling and the Lab main loops.
-// e.g. void Send_Time_Now( float _time_since_last );
+
+/**
+ * @brief update the left and right controllers according to the target speeds/positions
+ *
+ * @param _time_since_last
+ */
+void Update_Controller( float _time_since_last );
 
 #endif  // ifndef LAB5_TASKS_H

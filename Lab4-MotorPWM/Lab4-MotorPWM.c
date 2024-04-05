@@ -35,10 +35,11 @@
 #include "Task_Management.h"   // for clean task management with functors
 #include "Timing.h"            // for Time understanding
 
-// Include Lab Sepcific Functionality
+// Include Lab Specific Functionality
 #include "Lab1_Tasks.h"
 #include "Lab2_Tasks.h"
 #include "Lab3_Tasks.h"
+#include "Lab4_Tasks.h"
 
 // put your global variables (only if absolutely required) here.
 // Best to identify them as "static" to make them indentified as internal and start with a "_" to identify as internal.
@@ -114,7 +115,7 @@ int main( void )
         if( !battery_is_low ) {
             Task_Run_If_Ready( &task_enable_PWM );
         } else {
-            Task_Activate( &task_disable_PWM, -1 );
+            // Task_Activate( &task_disable_PWM, -1 );
         }
 
         Task_Run_If_Ready( &task_encoder_counts );

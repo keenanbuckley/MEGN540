@@ -36,12 +36,16 @@
 #ifndef SKID_STEER_CONTROLLER_H
 #define SKID_STEER_CONTROLLER_H
 
+#include <math.h>          // for M_PI
+
 #include "Controller.h"
 
 typedef struct {
     Controller_t controller_left;   // Z-Transform Controller for the left-side drive
     Controller_t controller_right;  // Z-Transform Controller for the right-side drive
 
+    // wheel diameter = 0.038m
+    // vvv 0.0825m
     float wheel_base_width;             // The left-to-right seporation distance between the two side's drive wheels
     float conversion_speed_to_control;  // Relates the linear tangential speed of the left-side or right-side wheel to the motor speed being controlled
     float max_abs_control;              // The maximum control that can be applied, to enable control saturation
