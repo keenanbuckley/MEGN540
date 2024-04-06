@@ -67,9 +67,9 @@ void Initialize_Modules( float _time_not_used_ )
     Initialize_Encoders();
     Initialize_Battery_Monitor();
     Initialize_MotorPWM( 500 );
-    float Kp               = 0.1;
-    float A[2]             = { 1.0, -0.97 };
-    float B[2]             = { -2.72, 2.75 };
+    float Kp               = 1.133;  // 0.1;
+    float A[2]             = { 1.0, -0.372 };
+    float B[2]             = { 1.757, -1.128 };
     float dt               = 0.01;
     float wheel_base_width = 0.0825;
     float wheel_diameter   = 0.038;

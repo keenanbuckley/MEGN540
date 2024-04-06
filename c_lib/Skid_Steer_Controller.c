@@ -49,8 +49,8 @@ void Initialize_Skid_Steer( Skid_Steer_Controller_t* p_skid_steer, float* z_tran
  */
 void Skid_Steer_Command_Displacement( Skid_Steer_Controller_t* p_skid_steer, float linear, float angular )
 {
-    float leftM     = linear - ( p_skid_steer->wheel_base_width * angular );
-    float rightM    = linear + ( p_skid_steer->wheel_base_width * angular );
+    float leftM     = linear - ( p_skid_steer->wheel_base_width * 0.667 * angular );
+    float rightM    = linear + ( p_skid_steer->wheel_base_width * 0.667 * angular );
     float leftEnc   = leftM * p_skid_steer->conversion_speed_to_control;
     float rightEnc  = rightM * p_skid_steer->conversion_speed_to_control;
     float leftMeas  = p_skid_steer->measurement_left_fcn_ptr();
@@ -69,8 +69,8 @@ void Skid_Steer_Command_Displacement( Skid_Steer_Controller_t* p_skid_steer, flo
  */
 void Skid_Steer_Command_Velocity( Skid_Steer_Controller_t* p_skid_steer, float linear, float angular )
 {
-    float velL = linear - ( p_skid_steer->wheel_base_width * angular );
-    float velR = linear + ( p_skid_steer->wheel_base_width * angular );
+    float velL = linear - ( p_skid_steer->wheel_base_width * 0.667 * angular );
+    float velR = linear + ( p_skid_steer->wheel_base_width * 0.667 * angular );
     Controller_Set_Target_Position( &p_skid_steer->controller_left, p_skid_steer->measurement_left_fcn_ptr() );
     Controller_Set_Target_Position( &p_skid_steer->controller_right, p_skid_steer->measurement_right_fcn_ptr() );
     Controller_Set_Target_Velocity( &p_skid_steer->controller_left, velL * p_skid_steer->conversion_speed_to_control );
