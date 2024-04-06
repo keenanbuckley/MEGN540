@@ -39,12 +39,12 @@ void Controller_Set_Target_Position( Controller_t* p_cont, float pos )
  */
 float Controller_Update( Controller_t* p_cont, float measurement, float dt )
 {
-    float filter_output = Filter_Value( &p_cont->controller, measurement );
+    // float filter_output = Filter_Value( &p_cont->controller, measurement );
 
     if( fabs( p_cont->target_vel ) > 1e-5 ) {
         p_cont->target_pos += p_cont->target_vel * dt;
     }
-    return p_cont->kp * ( p_cont->target_pos - filter_output );
+    return p_cont->kp * ( p_cont->target_pos - measurement );
 }
 
 /**

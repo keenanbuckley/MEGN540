@@ -314,6 +314,7 @@ void Task_Message_Handling( float _time_since_last )
                 MotorPWM_Set_Left( data.left );
                 MotorPWM_Set_Right( data.right );
                 Task_Activate( &task_enable_PWM, -1 );
+                Task_Cancel( &task_update_controller );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;
@@ -337,6 +338,7 @@ void Task_Message_Handling( float _time_since_last )
                 MotorPWM_Set_Right( data.right );
                 Task_Activate( &task_enable_PWM, -1 );
                 Task_Activate( &task_disable_PWM, data.duration * 1e-3 );
+                Task_Cancel( &task_update_controller );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;
@@ -349,6 +351,7 @@ void Task_Message_Handling( float _time_since_last )
 
                 // Call MEGN540_Lab_Task Function
                 Task_Activate( &task_disable_PWM, -1 );
+                Task_Cancel( &task_update_controller );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;
@@ -374,6 +377,48 @@ void Task_Message_Handling( float _time_since_last )
 
                 // Call MEGN540_Lab_Task Function
                 Task_Activate( &task_sys_id, run_period * 1e-3 );
+
+                // /* MEGN540 -- LAB 2 */
+                command_processed = true;
+            }
+            break;
+        case 'd':
+            if( USB_Msg_Length() >= _Message_Length( 'd' ) ) {
+                USB_Msg_Get();  // removes the first character from the received buffer
+
+                // Build a meaningful structure to put your data in. Here we want one char and one float
+                struct __attribute__( ( __packed__ ) ) {
+                    float linear;
+                    float angular;
+                } data;
+
+                USB_Msg_Read_Into( &data, sizeof( data ) );
+
+                // Call MEGN540_Lab_Task Function
+                Skid_Steer_Command_Displacement( &controller, data.linear, data.angular );
+                Task_Activate( &task_update_controller, controller.controller_left.update_period );
+                Task_Activate( &task_enable_PWM, -1 );
+
+                // /* MEGN540 -- LAB 2 */
+                command_processed = true;
+            }
+            break;
+        case 'v':
+            if( USB_Msg_Length() >= _Message_Length( 'd' ) ) {
+                USB_Msg_Get();  // removes the first character from the received buffer
+
+                // Build a meaningful structure to put your data in. Here we want one char and one float
+                struct __attribute__( ( __packed__ ) ) {
+                    float linear;
+                    float angular;
+                } data;
+
+                USB_Msg_Read_Into( &data, sizeof( data ) );
+
+                // Call MEGN540_Lab_Task Function
+                Skid_Steer_Command_Velocity( &controller, data.linear, data.angular );
+                Task_Activate( &task_update_controller, controller.controller_left.update_period );
+                Task_Activate( &task_enable_PWM, -1 );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;

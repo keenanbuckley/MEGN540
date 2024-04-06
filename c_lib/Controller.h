@@ -57,6 +57,14 @@ inline float Saturate( float value, float ABS_MAX )
 }
 
 /**
+ * Function Saturate saturates a value to be within the range.
+ */
+inline int SaturateInt( int value, int ABS_MAX )
+{
+    return ( value > ABS_MAX ) ? ABS_MAX : ( value < -ABS_MAX ) ? -ABS_MAX : value;
+}
+
+/**
  * Function Initialize_Controller sets up the z-transform based controller for the system.
  */
 void Initialize_Controller( Controller_t* p_cont, float kp, float* num, float* den, uint8_t order, float update_period );

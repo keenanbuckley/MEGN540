@@ -67,7 +67,14 @@ void Initialize_Modules( float _time_not_used_ )
     Initialize_Encoders();
     Initialize_Battery_Monitor();
     Initialize_MotorPWM( 500 );
-    // Initialize_Skid_Steer( &controller, );
+    float Kp               = 0.1;
+    float A[2]             = { 1.0, -0.97 };
+    float B[2]             = { -2.72, 2.75 };
+    float dt               = 0.011;
+    float wheel_base_width = 0.0825;
+    float wheel_diameter   = 0.038;
+    Initialize_Skid_Steer( &controller, (float*)&A, (float*)&B, 2, dt, Kp, 80, wheel_base_width, wheel_diameter, Encoder_Counts_Left, Encoder_Counts_Right,
+                           MotorPWM_Set_Left, MotorPWM_Set_Right );
 
     // Setup task handling
     Initialize_Task( &task_restart, Initialize_Modules /*function pointer to call*/ );
@@ -92,7 +99,7 @@ void Initialize_Modules( float _time_not_used_ )
     Task_Activate( &task_battery_filter, 2e-3 );
     Initialize_Task( &task_battery_low, Send_Battery_Low );
     Initialize_Task( &task_check_voltage, Check_Battery_Voltage );
-    Task_Activate( &task_check_voltage, 1e-2 );
+    Task_Activate( &task_check_voltage, 5e-1 );
 
     // Initialize battery task
     Initialize_Task( &task_battery_voltage, Send_Battery_Voltage );
@@ -101,6 +108,9 @@ void Initialize_Modules( float _time_not_used_ )
     Initialize_Task( &task_enable_PWM, Enable_PWM );
     Initialize_Task( &task_disable_PWM, Stop_PWM );
     Initialize_Task( &task_sys_id, Send_Sys_ID );
+
+    // Initialize controller tasks
+    Initialize_Task( &task_update_controller, Update_Controller );
 }
 
 /** Main program entry point. This routine configures the hardware required by the application, then

@@ -21,17 +21,17 @@ static const float COUNTS_TO_RADIANS = 2 * M_PI / 909.7;
  * @param control_right_fcn_ptr a founction pointer to the right side's control applicaion
  */
 void Initialize_Skid_Steer( Skid_Steer_Controller_t* p_skid_steer, float* z_transform_numerator, float* z_transform_denominator, uint8_t z_transform_order,
-                            float descritization_period, float error_to_control_gain, float max_abs_control, float wheel_base_width, float wheel_diameter,
-                            float ( *measurement_left_fcn_ptr )( void ), float ( *measurement_right_fcn_ptr )( void ), void ( *control_left_fcn_ptr )( float ),
-                            void ( *control_right_fcn_ptr )( float ) )
+                            float descritization_period, float error_to_control_gain, int16_t max_abs_control, float wheel_base_width, float wheel_diameter,
+                            int32_t ( *measurement_left_fcn_ptr )( void ), int32_t ( *measurement_right_fcn_ptr )( void ),
+                            void ( *control_left_fcn_ptr )( int16_t ), void ( *control_right_fcn_ptr )( int16_t ) )
 {
     Initialize_Controller( &p_skid_steer->controller_left, error_to_control_gain, z_transform_numerator, z_transform_denominator, z_transform_order,
                            descritization_period );
     Initialize_Controller( &p_skid_steer->controller_right, error_to_control_gain, z_transform_numerator, z_transform_denominator, z_transform_order,
                            descritization_period );
 
+    p_skid_steer->conversion_speed_to_control = 1 / ( 0.5 * COUNTS_TO_RADIANS * wheel_diameter );
     p_skid_steer->wheel_base_width            = wheel_base_width;
-    p_skid_steer->conversion_speed_to_control = 0.5 * COUNTS_TO_RADIANS * wheel_diameter;
     p_skid_steer->max_abs_control             = max_abs_control;
 
     p_skid_steer->measurement_left_fcn_ptr  = measurement_left_fcn_ptr;
@@ -49,11 +49,12 @@ void Initialize_Skid_Steer( Skid_Steer_Controller_t* p_skid_steer, float* z_tran
  */
 void Skid_Steer_Command_Displacement( Skid_Steer_Controller_t* p_skid_steer, float linear, float angular )
 {
-    float right = linear + ( p_skid_steer->wheel_base_width * 0.5 * angular );
-    float left  = linear - ( p_skid_steer->wheel_base_width * 0.5 * angular );
-
-    Controller_Set_Target_Position( &p_skid_steer->controller_right, right );
-    Controller_Set_Target_Position( &p_skid_steer->controller_left, left );
+    float leftM    = linear - ( p_skid_steer->wheel_base_width * 0.5 * angular );
+    float rightM   = linear + ( p_skid_steer->wheel_base_width * 0.5 * angular );
+    float leftEnc  = leftM * p_skid_steer->conversion_speed_to_control;
+    float rightEnc = rightM * p_skid_steer->conversion_speed_to_control;
+    Controller_Set_Target_Position( &p_skid_steer->controller_left, rightEnc + p_skid_steer->measurement_right_fcn_ptr() );
+    Controller_Set_Target_Position( &p_skid_steer->controller_right, leftEnc + p_skid_steer->measurement_left_fcn_ptr() );
 }
 
 /**
@@ -67,8 +68,8 @@ void Skid_Steer_Command_Velocity( Skid_Steer_Controller_t* p_skid_steer, float l
     float velR = linear + ( p_skid_steer->wheel_base_width * 0.5 * angular );
     float velL = linear - ( p_skid_steer->wheel_base_width * 0.5 * angular );
 
-    Controller_Set_Target_Velocity( &p_skid_steer->controller_right, velR );
-    Controller_Set_Target_Velocity( &p_skid_steer->controller_left, velL );
+    Controller_Set_Target_Velocity( &p_skid_steer->controller_right, velR * p_skid_steer->conversion_speed_to_control );
+    Controller_Set_Target_Velocity( &p_skid_steer->controller_left, velL * p_skid_steer->conversion_speed_to_control );
 }
 
 /**
@@ -82,10 +83,10 @@ void Skid_Steer_Control_Update( Skid_Steer_Controller_t* p_skid_steer, float ell
     float measurement_right = p_skid_steer->measurement_right_fcn_ptr();
 
     // update controllers
-    float setpoint_left  = Controller_Update( &p_skid_steer->controller_left, measurement_left, ellapsed_time );
-    float setpoint_right = Controller_Update( &p_skid_steer->controller_right, measurement_right, ellapsed_time );
+    int16_t setpoint_left  = Controller_Update( &p_skid_steer->controller_left, measurement_left, ellapsed_time );
+    int16_t setpoint_right = Controller_Update( &p_skid_steer->controller_right, measurement_right, ellapsed_time );
 
     // set new setpoints
-    p_skid_steer->control_left_fcn_ptr( Saturate( setpoint_left, p_skid_steer->max_abs_control ) );
-    p_skid_steer->control_right_fcn_ptr( Saturate( setpoint_right, p_skid_steer->max_abs_control ) );
+    p_skid_steer->control_left_fcn_ptr( SaturateInt( setpoint_left, p_skid_steer->max_abs_control ) );
+    p_skid_steer->control_right_fcn_ptr( SaturateInt( setpoint_right, p_skid_steer->max_abs_control ) );
 }

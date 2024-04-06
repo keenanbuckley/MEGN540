@@ -36,9 +36,10 @@
 #ifndef SKID_STEER_CONTROLLER_H
 #define SKID_STEER_CONTROLLER_H
 
-#include <math.h>          // for M_PI
-
 #include "Controller.h"
+#include "SerialIO.h"
+
+#include <math.h>  // for M_PI
 
 typedef struct {
     Controller_t controller_left;   // Z-Transform Controller for the left-side drive
@@ -48,7 +49,7 @@ typedef struct {
     // vvv 0.0825m
     float wheel_base_width;             // The left-to-right seporation distance between the two side's drive wheels
     float conversion_speed_to_control;  // Relates the linear tangential speed of the left-side or right-side wheel to the motor speed being controlled
-    float max_abs_control;              // The maximum control that can be applied, to enable control saturation
+    int16_t max_abs_control;            // The maximum control that can be applied, to enable control saturation
 
     //// Consider adding in the following functionality to implement slew-limited commands
     // float max_lin_accel;
@@ -65,11 +66,12 @@ typedef struct {
     // float ang_vel_target_current;
     // uint8_t velocity_mode;
 
-    float ( *measurement_left_fcn_ptr )( void );   // function pointer to a function that provides a measurement for the left-side's drive angular measurement
-    float ( *measurement_right_fcn_ptr )( void );  // function pointer to a function that provides a measurement for the right-side's drive angular measurement
+    int32_t ( *measurement_left_fcn_ptr )( void );  // function pointer to a function that provides a measurement for the left-side's drive angular measurement
+    int32_t ( *measurement_right_fcn_ptr )(
+        void );  // function pointer to a function that provides a measurement for the right-side's drive angular measurement
 
-    void ( *control_left_fcn_ptr )( float );   // function pointer to a function that alows a left-side drive control to be specified
-    void ( *control_right_fcn_ptr )( float );  // function pointer to a function that alows a right-side drive control to be specified
+    void ( *control_left_fcn_ptr )( int16_t );   // function pointer to a function that alows a left-side drive control to be specified
+    void ( *control_right_fcn_ptr )( int16_t );  // function pointer to a function that alows a right-side drive control to be specified
 
 } Skid_Steer_Controller_t;
 
@@ -92,9 +94,9 @@ typedef struct {
  * @param control_right_fcn_ptr a founction pointer to the right side's control applicaion
  */
 void Initialize_Skid_Steer( Skid_Steer_Controller_t* p_skid_steer, float* z_transform_numerator, float* z_transform_denominator, uint8_t z_transform_order,
-                            float descritization_period, float error_to_control_gain, float max_abs_control, float wheel_base_width, float wheel_diameter,
-                            float ( *measurement_left_fcn_ptr )( void ), float ( *measurement_right_fcn_ptr )( void ), void ( *control_left_fcn_ptr )( float ),
-                            void ( *control_right_fcn_ptr )( float ) );
+                            float descritization_period, float error_to_control_gain, int16_t max_abs_control, float wheel_base_width, float wheel_diameter,
+                            int32_t ( *measurement_left_fcn_ptr )( void ), int32_t ( *measurement_right_fcn_ptr )( void ),
+                            void ( *control_left_fcn_ptr )( int16_t ), void ( *control_right_fcn_ptr )( int16_t ) );
 
 /**
  * @brief Skid_Steer_Command_Displacement sets a new target diplacment for the robot to execute. This is a relative displacment to the current position, not an

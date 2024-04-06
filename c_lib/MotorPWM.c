@@ -66,7 +66,12 @@ void MotorPWM_Set_Left( int16_t pwm )
             PORTB |= ( 1 << PB2 );
         }
 
-        _left_pwm = ( ( abs( pwm ) * _TOP ) / ( 100 - MOTOR_DEADBAND ) ) + ( ( MOTOR_DEADBAND * _TOP ) / 100 );
+        if( abs( pwm ) < MOTOR_DEADBAND ) {
+            pwm = MOTOR_DEADBAND;
+        }
+
+        //_left_pwm = ( ( abs( pwm ) * _TOP ) / ( 100 - MOTOR_DEADBAND ) ) + ( ( MOTOR_DEADBAND * _TOP ) / 100 );
+        _left_pwm = ( abs( pwm ) * _TOP ) / 100;
     } else {
         _left_pwm = 0;
     }
@@ -86,7 +91,12 @@ void MotorPWM_Set_Right( int16_t pwm )
             PORTB |= ( 1 << PB1 );
         }
 
-        _right_pwm = ( ( abs( pwm ) * _TOP ) / ( 100 - MOTOR_DEADBAND ) ) + ( ( MOTOR_DEADBAND * _TOP ) / 100 );
+        if( abs( pwm ) < MOTOR_DEADBAND ) {
+            pwm = MOTOR_DEADBAND;
+        }
+
+        //_right_pwm = ( ( abs( pwm ) * _TOP ) / ( 100 - MOTOR_DEADBAND ) ) + ( ( MOTOR_DEADBAND * _TOP ) / 100 );
+        _right_pwm = ( abs( pwm ) * _TOP ) / 100;
     } else {
         _right_pwm = 0;
     }
