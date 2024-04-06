@@ -44,6 +44,7 @@
 // Put your lab-specific tasks here
 Skid_Steer_Controller_t controller;
 Task_t task_update_controller;
+Task_t task_stop_controller;
 
 // Put your lab-specific task functionality and data_structures (if necessary) here so it is accessable to both
 // message handeling and the Lab main loops.
@@ -54,5 +55,12 @@ Task_t task_update_controller;
  * @param _time_since_last
  */
 void Update_Controller( float _time_since_last );
+
+/**
+ * @brief cancel the update controller task and shutdown pwm
+ *
+ * @param _time_since_last
+ */
+void Stop_Controller( float _time_since_last );
 
 #endif  // ifndef LAB5_TASKS_H

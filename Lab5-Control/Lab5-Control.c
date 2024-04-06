@@ -70,10 +70,10 @@ void Initialize_Modules( float _time_not_used_ )
     float Kp               = 0.1;
     float A[2]             = { 1.0, -0.97 };
     float B[2]             = { -2.72, 2.75 };
-    float dt               = 0.011;
+    float dt               = 0.01;
     float wheel_base_width = 0.0825;
     float wheel_diameter   = 0.038;
-    Initialize_Skid_Steer( &controller, (float*)&A, (float*)&B, 2, dt, Kp, 80, wheel_base_width, wheel_diameter, Encoder_Counts_Left, Encoder_Counts_Right,
+    Initialize_Skid_Steer( &controller, (float*)&B, (float*)&A, 1, dt, Kp, 60, wheel_base_width, wheel_diameter, Encoder_Counts_Left, Encoder_Counts_Right,
                            MotorPWM_Set_Left, MotorPWM_Set_Right );
 
     // Setup task handling
@@ -111,6 +111,7 @@ void Initialize_Modules( float _time_not_used_ )
 
     // Initialize controller tasks
     Initialize_Task( &task_update_controller, Update_Controller );
+    Initialize_Task( &task_stop_controller, Stop_Controller );
 }
 
 /** Main program entry point. This routine configures the hardware required by the application, then
@@ -132,6 +133,7 @@ int main( void )
 
         Task_Run_If_Ready( &task_encoder_counts );
         Task_Run_If_Ready( &task_update_controller );
+        Task_Run_If_Ready( &task_stop_controller );
         Task_Run_If_Ready( &task_sys_id );
         Task_Run_If_Ready( &task_time_loop );
         Task_Run_If_Ready( &task_disable_PWM );
