@@ -67,10 +67,10 @@ void Initialize_Modules( float _time_not_used_ )
     Initialize_Encoders();
     Initialize_Battery_Monitor();
     Initialize_MotorPWM( 500 );
-    float Kp               = 1.133;  // 0.1;
-    float A[2]             = { 1.0, -0.372 };
-    float B[2]             = { 1.757, -1.128 };
-    float dt               = 0.01;
+    float Kp               = 1.1327;  // 0.1;
+    float A[2]             = { 1.0, -0.905768907362 };
+    float B[2]             = { 1.756593141070, -1.662362048432 };
+    float dt               = 1e-3;
     float wheel_base_width = 0.0825;
     float wheel_diameter   = 0.038;
     Initialize_Skid_Steer( &controller, (float*)&B, (float*)&A, 1, dt, Kp, 60, wheel_base_width, wheel_diameter, Encoder_Counts_Left, Encoder_Counts_Right,
