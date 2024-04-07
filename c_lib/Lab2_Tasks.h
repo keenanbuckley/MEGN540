@@ -43,18 +43,16 @@
 
 // Put your lab-specific tasks here
 // e.g. Task_t task_restart;  ///<-- Lab 1: This flag indicates that the device received a restart command from the hoast. Default inactive.
-Task_t task_time_loop;                  ///<-- Lab 2: Indicates if the system should report time to complete a loop.
+Task_t task_measure_loop_time;
+float loop_time_seconds;
+Task_t task_send_loop_time;             ///<-- Lab 2: Indicates if the system should report time to complete a loop.
 Task_t task_send_time;                  ///<-- Lab 2: Indicates if the system should send the current time.
 Task_t task_message_handling_watchdog;  ///<-- LAB 2: Watchdog Timer for Flusing USB Input Messaging if incomplete message received.
 
 // Put your lab-specific task functionality and data_structures (if necessary) here so it is accessable to both
 // message handeling and the Lab main loops.
-void Send_Loop_Time( float _time_since_last, char cmd );
-float task_time_loop_send_period;
-Time_t task_time_loop_last;
-void Task_Send_Loop_Time( float _time_since_last );
-
-void Send_Time_Now( float _time_since_last, char cmd );
-void Task_Send_Time_Now( float _time_since_last );
+void Measure_Loop_Time( float _time_since_last );
+void Send_Loop_Time( float _time_since_last );
+void Send_Time_Now( float _time_since_last );
 
 #endif  // ifndef LAB2_TASKS_H

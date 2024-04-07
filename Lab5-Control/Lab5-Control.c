@@ -87,8 +87,9 @@ void Initialize_Modules( float _time_not_used_ )
     Task_Activate( &task_message_handling_watchdog, watchdog_timer );
 
     // Initialize timing tasks
-    Initialize_Task( &task_time_loop, Task_Send_Loop_Time );
-    Initialize_Task( &task_send_time, Task_Send_Time_Now );
+    Initialize_Task( &task_measure_loop_time, 0 );
+    Initialize_Task( &task_send_loop_time, Send_Loop_Time );
+    Initialize_Task( &task_send_time, Send_Time_Now );
 
     // Initialize encoder task
     Initialize_Task( &task_encoder_counts, Send_Encoder_Counts );
@@ -97,9 +98,9 @@ void Initialize_Modules( float _time_not_used_ )
     Init_Battery_Voltage_Filter();
     Initialize_Task( &task_battery_filter, Update_Battery_Voltage_Filter );
     Task_Activate( &task_battery_filter, 2e-3 );
-    Initialize_Task( &task_battery_low, Send_Battery_Low );
     Initialize_Task( &task_check_voltage, Check_Battery_Voltage );
     Task_Activate( &task_check_voltage, 5e-1 );
+    Initialize_Task( &task_battery_low, Send_Battery_Low );
 
     // Initialize battery task
     Initialize_Task( &task_battery_voltage, Send_Battery_Voltage );
@@ -123,26 +124,32 @@ int main( void )
     Initialize_Modules( 0.0 );
 
     for( ;; ) {  // yet another way to do while (true)
-        Task_USB_Upkeep();
 
+        // Update System State
+        Task_Run_If_Ready( &task_measure_loop_time );
+        Task_Run_If_Ready( &task_encoder_counts );
+        Task_Run_If_Ready( &task_update_controller );
+        Task_Run_If_Ready( &task_stop_controller );
+        Task_Run_If_Ready( &task_disable_PWM );
+        Task_Run_If_Ready( &task_battery_filter );
+        Task_Run_If_Ready( &task_battery_voltage );
+        Task_Run_If_Ready( &task_check_voltage );
+
+        // Tasks which require battery usage
         if( !battery_is_low ) {
             Task_Run_If_Ready( &task_enable_PWM );
         } else {
             Task_Activate( &task_disable_PWM, -1 );
         }
 
-        Task_Run_If_Ready( &task_encoder_counts );
-        Task_Run_If_Ready( &task_update_controller );
-        Task_Run_If_Ready( &task_stop_controller );
-        Task_Run_If_Ready( &task_sys_id );
-        Task_Run_If_Ready( &task_time_loop );
-        Task_Run_If_Ready( &task_disable_PWM );
-        Task_Run_If_Ready( &task_battery_filter );
-        Task_Run_If_Ready( &task_battery_voltage );
-        Task_Run_If_Ready( &task_check_voltage );
-        Task_Run_If_Ready( &task_battery_low );
+        // Serial I/O Tasks
+        Task_USB_Upkeep();
         Task_Run_If_Ready( &task_message_handling );
-        Task_Run_If_Ready( &task_restart );
         Task_Run_If_Ready( &task_message_handling_watchdog );
+        Task_Run_If_Ready( &task_send_loop_time );
+        Task_Run_If_Ready( &task_send_time );
+        Task_Run_If_Ready( &task_battery_low );
+        Task_Run_If_Ready( &task_sys_id );
+        Task_Run_If_Ready( &task_restart );
     }
 }

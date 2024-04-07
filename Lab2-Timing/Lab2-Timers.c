@@ -71,8 +71,9 @@ void Initialize_Modules( float _time_not_used_ )
     Task_Activate( &task_message_handling_watchdog, watchdog_timer );
 
     // Initialize timing tasks
-    Initialize_Task( &task_time_loop, Task_Send_Loop_Time );
-    Initialize_Task( &task_send_time, Task_Send_Time_Now );
+    Initialize_Task( &task_measure_loop_time, 0 );
+    Initialize_Task( &task_send_loop_time, Send_Loop_Time );
+    Initialize_Task( &task_send_time, Send_Time_Now );
 }
 
 /** Main program entry point. This routine configures the hardware required by the application, then
@@ -87,10 +88,11 @@ int main( void )
         Task_USB_Upkeep();
 
         Task_Run_If_Ready( &task_message_handling );
-        Task_Run_If_Ready( &task_time_loop );
+        Task_Run_If_Ready( &task_send_loop_time );
         Task_Run_If_Ready( &task_send_time );
         Task_Run_If_Ready( &task_restart );
 
         Task_Run_If_Ready( &task_message_handling_watchdog );
+        Task_Run_If_Ready( &task_measure_loop_time );
     }
 }

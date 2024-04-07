@@ -203,8 +203,8 @@ void Task_Message_Handling( float _time_since_last )
 
                 // Call MEGN540_Lab_Task Function
                 switch( data.c ) {
-                    case 0: Send_Time_Now( _time_since_last, command ); break;
-                    case 1: Send_Loop_Time( _time_since_last, command ); break;
+                    case 0: Task_Activate( &task_send_time, -1 ); break;
+                    case 1: Task_Activate( &task_send_loop_time, -1 ); break;
                     default: break;
                 }
 
@@ -216,31 +216,20 @@ void Task_Message_Handling( float _time_since_last )
             if( USB_Msg_Length() >= _Message_Length( 'T' ) ) {
                 USB_Msg_Get();  // removes the first character from the received buffer
 
-                // Build a meaningful structure to put your data in. Here we want one char and one float
+                // Build a meaningful structure to put your data in.
                 struct __attribute__( ( __packed__ ) ) {
                     char c;
-                    float f;
+                    float run_period;
                 } data;
 
                 // Copy the bytes from the usb receive buffer into our structure so we
                 // can use the information
                 USB_Msg_Read_Into( &data, sizeof( data ) );
 
-                // convert data.f from milliseconds to seconds
-                data.f *= 1e-3;
-
                 // Call MEGN540_Lab_Task Function
                 switch( data.c ) {
-                    case 0:
-                        Send_Time_Now( _time_since_last, command );
-                        Task_Activate( &task_send_time, data.f );
-                        break;
-                    case 1:
-                        Send_Loop_Time( _time_since_last, command );
-                        task_time_loop_send_period = data.f;
-                        task_time_loop_last        = Timing_Get_Time();
-                        Task_Activate( &task_time_loop, 0 );
-                        break;
+                    case 0: Task_Activate_Periodic( &task_send_time, data.run_period * 1e-3 ); break;
+                    case 1: Task_Activate_Periodic( &task_send_loop_time, data.run_period * 1e-3 ); break;
                     default: break;
                 }
 
@@ -376,7 +365,7 @@ void Task_Message_Handling( float _time_since_last )
                 USB_Msg_Read_Into( &run_period, sizeof( run_period ) );
 
                 // Call MEGN540_Lab_Task Function
-                Task_Activate( &task_sys_id, run_period * 1e-3 );
+                Task_Activate_Periodic( &task_sys_id, run_period * 1e-3 );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;
@@ -411,7 +400,7 @@ void Task_Message_Handling( float _time_since_last )
                 struct __attribute__( ( __packed__ ) ) {
                     float linear;
                     float angular;
-                    float time;
+                    float duration;
                 } data;
 
                 USB_Msg_Read_Into( &data, sizeof( data ) );
@@ -420,7 +409,7 @@ void Task_Message_Handling( float _time_since_last )
                 Skid_Steer_Command_Displacement( &controller, data.linear, data.angular );
                 Task_Activate( &task_update_controller, controller.controller_left.update_period );
                 Task_Activate( &task_enable_PWM, -1 );
-                Task_Activate( &task_stop_controller, data.time * 1e-3 );
+                Task_Activate( &task_stop_controller, data.duration * 1e-3 );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;
@@ -455,7 +444,7 @@ void Task_Message_Handling( float _time_since_last )
                 struct __attribute__( ( __packed__ ) ) {
                     float linear;
                     float angular;
-                    float time;
+                    float duration;
                 } data;
 
                 USB_Msg_Read_Into( &data, sizeof( data ) );
@@ -464,7 +453,7 @@ void Task_Message_Handling( float _time_since_last )
                 Skid_Steer_Command_Velocity( &controller, data.linear, data.angular );
                 Task_Activate( &task_update_controller, controller.controller_left.update_period );
                 Task_Activate( &task_enable_PWM, -1 );
-                Task_Activate( &task_stop_controller, data.time * 1e-3 );
+                Task_Activate( &task_stop_controller, data.duration * 1e-3 );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;

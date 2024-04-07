@@ -45,9 +45,6 @@ void Send_Battery_Low( float _time_since_last )
         } msg = { .let = { 'B', 'A', 'T', 'L', 'O', 'W' }, .volt = voltage };
         // Send Warning to Serial that batteries need to be charged
         USB_Send_Msg( "c6sf", '!', &msg, sizeof( msg ) );
-        // Task_Activate( &task_battery_voltage, -1 );
-        // USB_Send_Msg( "cf", '!', &msg.volt, sizeof( msg.volt ) );
-        // USB_Send_Msg( "c7sf", '!', &msg, sizeof( msg ) );
     }
 }
 
