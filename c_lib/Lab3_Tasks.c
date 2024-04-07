@@ -19,6 +19,7 @@ void Check_Battery_Voltage( float _time_since_last )
     if( check_voltage_last < 4.8f && voltage < 4.8f ) {
         if( !battery_is_low ) {
             battery_is_low = true;
+            Send_Battery_Low( 0 );
             Task_Activate( &task_battery_low, 1.0 );
         }
     } else {
