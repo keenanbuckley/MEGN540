@@ -20,7 +20,11 @@ void Initialize_Controller( Controller_t* p_cont, float kp, float* num, float* d
  */
 void Controller_Set_Target_Velocity( Controller_t* p_cont, float vel )
 {
-    p_cont->target_vel = vel;
+    if( fabs( vel ) > 0.1 ) {
+        p_cont->target_vel = vel;
+    } else {
+        Controller_Set_Target_Position( p_cont, Filter_Last_Output( &p_cont->controller ) + p_cont->target_vel * 1e-1 );
+    }
 }
 
 /**

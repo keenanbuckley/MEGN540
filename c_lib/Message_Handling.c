@@ -451,9 +451,11 @@ void Task_Message_Handling( float _time_since_last )
 
                 // Call MEGN540_Lab_Task Function
                 Skid_Steer_Command_Velocity( &controller, data.linear, data.angular );
-                Task_Activate( &task_update_controller, controller.controller_left.update_period );
+                if( !&task_update_controller.is_active ) {
+                    Task_Activate( &task_update_controller, controller.controller_left.update_period );
+                }
                 Task_Activate( &task_enable_PWM, -1 );
-                Task_Activate( &task_stop_controller, data.duration * 1e-3 );
+                Task_Activate( &task_stop_controller, data.duration );
 
                 // /* MEGN540 -- LAB 2 */
                 command_processed = true;

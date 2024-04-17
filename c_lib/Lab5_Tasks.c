@@ -19,6 +19,6 @@ void Update_Controller( float _time_since_last )
  */
 void Stop_Controller( float _time_since_last )
 {
-    Task_Cancel( &task_update_controller );
+    Task_Cancel( &task_stop_controller );
     Task_Activate( &task_disable_PWM, -1 );
 }

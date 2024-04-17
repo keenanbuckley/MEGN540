@@ -1,5 +1,7 @@
 #include "Skid_Steer_Controller.h"
 
+#include "stdlib.h"
+
 static const float COUNTS_TO_RADIANS = 2 * M_PI / 909.7;
 
 /**
@@ -69,14 +71,14 @@ void Skid_Steer_Command_Displacement( Skid_Steer_Controller_t* p_skid_steer, flo
  */
 void Skid_Steer_Command_Velocity( Skid_Steer_Controller_t* p_skid_steer, float linear, float angular )
 {
-    float velL      = linear - ( p_skid_steer->wheel_base_width * 0.667 * angular );
-    float velR      = linear + ( p_skid_steer->wheel_base_width * 0.667 * angular );
-    float leftMeas  = p_skid_steer->measurement_left_fcn_ptr();
-    float rightMeas = p_skid_steer->measurement_right_fcn_ptr();
-    Controller_SetTo( &p_skid_steer->controller_left, leftMeas );
-    Controller_SetTo( &p_skid_steer->controller_right, rightMeas );
-    Controller_Set_Target_Position( &p_skid_steer->controller_left, leftMeas );
-    Controller_Set_Target_Position( &p_skid_steer->controller_right, rightMeas );
+    float velL = linear - ( p_skid_steer->wheel_base_width * 0.667 * angular );
+    float velR = linear + ( p_skid_steer->wheel_base_width * 0.667 * angular );
+    // float leftMeas  = p_skid_steer->measurement_left_fcn_ptr();
+    // float rightMeas = p_skid_steer->measurement_right_fcn_ptr();
+    // Controller_SetTo( &p_skid_steer->controller_left, leftMeas );
+    // Controller_SetTo( &p_skid_steer->controller_right, rightMeas );
+    // Controller_Set_Target_Position( &p_skid_steer->controller_left, leftMeas );
+    // Controller_Set_Target_Position( &p_skid_steer->controller_right, rightMeas );
     Controller_Set_Target_Velocity( &p_skid_steer->controller_left, velL * p_skid_steer->conversion_speed_to_control );
     Controller_Set_Target_Velocity( &p_skid_steer->controller_right, velR * p_skid_steer->conversion_speed_to_control );
 }
@@ -94,6 +96,14 @@ void Skid_Steer_Control_Update( Skid_Steer_Controller_t* p_skid_steer, float ell
     // update controllers
     int16_t setpoint_left  = Controller_Update( &p_skid_steer->controller_left, measurement_left, ellapsed_time );
     int16_t setpoint_right = Controller_Update( &p_skid_steer->controller_right, measurement_right, ellapsed_time );
+
+    if( abs( setpoint_left ) < 10 ) {
+        setpoint_left = 0;
+    }
+
+    if( abs( setpoint_right ) < 10 ) {
+        setpoint_right = 0;
+    }
 
     // set new setpoints
     p_skid_steer->control_left_fcn_ptr( SaturateInt( setpoint_left, p_skid_steer->max_abs_control ) );
